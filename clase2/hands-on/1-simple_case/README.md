@@ -8,8 +8,10 @@ Si queremos usar la linea de comando, los pasos a seguir es
 docker build -t python-app:latest . 
 ```
 
-2. Ahora podemos ejecutar la imagen.
+2. Ahora podemos ejecutar la imagen. Le doy el commando run de ejecutar y el nombre del contenedor
 
 ```Bash
 docker run python-app
 ```
+
+Me va a devolver el Zen de Python

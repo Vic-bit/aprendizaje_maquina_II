@@ -1,4 +1,5 @@
 services:
+#Usamos una base de datos que ya existe y usamos esa imagen del repositorio
   postgres:
     restart: always
     image: postgres
@@ -7,6 +8,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - net
+    #Variables ambientes
     env_file:
       - .env
     volumes:
@@ -16,12 +18,13 @@ services:
       interval: 60s
       timeout: 20s
       retries: 3
-
+#Va a contruir la imagen de la capeta dockerfiles
   salary:
     restart: always
     build: "./dockerfiles/salary_app"
     image: salary_app
     container_name: salary_app
+    #Va a trabajar sobre el mismo puerto
     ports:
       - "${SALARY_PORT:-8501}:8501"
     networks:

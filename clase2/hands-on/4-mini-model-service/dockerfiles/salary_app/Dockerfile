@@ -12,5 +12,5 @@ COPY /app .
 # Expose streamlit port
 EXPOSE 8501
 
-# Run the command on container startup
+# Run the command on container startup. Le tenes que dar todas las instrucciones a streamlit
 ENTRYPOINT ["streamlit", "run", "./app.py"]

@@ -109,7 +109,7 @@ def main():
     # Carga el artefacto del modelo
     model = load_model()
 
-    # Verifica si la conexión es exitosa
+    # Verifica si la conexión es exitosa. Son las funciones de streamlit para armar un front.
     if engine is not None:
         # Obtiene datos de la base de datos
         names_list = fetch_names(engine)
@@ -180,5 +180,5 @@ def main():
     else:
         st.error("Fallo la conexión con la base de datos.")
 
-if __name__ == "__main__":
+if __name__ == "__main__": #Queda corriendo
     main()

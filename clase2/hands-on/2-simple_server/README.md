@@ -14,3 +14,6 @@ podemos acceder.
 ```Bash
 docker run -p 8000:8000 hello-world-flask
 ```
+
+Tenemos una API implementada en Doker con Flask.
+Puedo poner el puerto en el buscador y me muestra el Hello World.

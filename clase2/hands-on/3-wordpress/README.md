@@ -2,7 +2,7 @@
 
 Si queremos usar la línea de comando, los pasos a seguir es
 
-1. Construimos las imágenes y levantamos todo
+1. Construimos las imágenes y levantamos todo. Va a constuir la imagen y levanta en un solo comando
 
 ```Bash
 docker-compose up -d
