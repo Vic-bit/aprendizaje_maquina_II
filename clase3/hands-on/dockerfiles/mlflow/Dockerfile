@@ -6,4 +6,8 @@ RUN pip install --upgrade pip
 RUN pip install mlflow[extras] psycopg2-binary boto3 cryptography pymysql
 RUN pip install --no-cache-dir -r /requirements.txt
 
-EXPOSE 5000
+#Puerto por el que se va a exponer el docker file.
+EXPOSE 5000 
+
+#Le vamos a instalar ML flow y sus extras, psycopg2-binary cuando se cree el docker file, boto3, etc.
+#

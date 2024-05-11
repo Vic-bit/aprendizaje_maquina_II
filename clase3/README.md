@@ -7,3 +7,6 @@
 * Capa de computo
 * Plataforma de ML
 * MLFlow
+
+# Tenemos que estar en la terminal en la carpeta hands-on hacerlo instalar ahí.
+# Si genera prblema debemos correr el docker desktop y debemos borrar todo.

@@ -1,4 +1,5 @@
 services:
+  #Construimos una base de datos postgres
   postgres:
     restart: always
     image: postgres
@@ -21,6 +22,7 @@ services:
       timeout: 20s
       retries: 3
 
+#Construimos un servicio de s3, que simula el local en nuetras PC local contenedores s3 de AWS. 
   s3:
     restart: always
     image: minio/minio:latest
@@ -58,6 +60,7 @@ services:
       exit 0;
       '
 
+#Creamos el servicio de MLFlow
   mlflow:
     restart: always
     build: "./dockerfiles/mlflow"
