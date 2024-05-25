@@ -41,14 +41,14 @@ class BatchProcessingModel(FlowSpec):
         s3 = S3(s3root="s3://batch/")
         model_param = s3.get("artifact/model.json")
 
-        loaded_model = XGBClassifier()
-        loaded_model.load_model(model_param.path)
+        loaded_model = XGBClassifier() #Levanto una instancia del modelo
+        loaded_model.load_model(model_param.path) #A esa instanacia le cargamos el modelo entrenado sin hacer un fit.
 
-        self.model = loaded_model
+        self.model = loaded_model 
         self.next(self.batch_processing)
 
     @step
-    def batch_processing(self, previous_tasks):
+    def batch_processing(self, previous_tasks): #De las dos salidas las unimos. Tomo los datos el modelo y hago las predicciones
         """
         Paso para realizar el procesamiento por lotes y obtener predicciones.
         """
@@ -59,33 +59,33 @@ class BatchProcessingModel(FlowSpec):
 
         # Se recorren las tareas previas para obtener los datos y el modelo.
         for task in previous_tasks:
-            if hasattr(task, 'X_batch'):
+            if hasattr(task, 'X_batch'): # Si la tarea es de X_batcha las carga en el modelo
                 data = task.X_batch
             if hasattr(task, 'model'):
                 model = task.model
 
         # Se obtienen las predicciones utilizando el modelo.
-        out = model.predict(data)
-
+        out = model.predict(data) #Cuando analiza nos va a decir que necesitamos declarar le modelo antes, entonces los declaro arriba para que pylink no me de error, lo tengo instalado en VSC
+                                #Predecimos
         # Se define un diccionario de mapeo
-        label_map = {0: "setosa", 1: "versicolor", 2: "virginica"}
+        label_map = {0: "setosa", 1: "versicolor", 2: "virginica"} #Hacemos esto para que la salida sea texto
 
         # Y obtenemos la salida del modelo en modo de string. Esto podríamos haberlo implementado directamente en
         # la lógica del modelo
         labels = np.array([label_map[idx] for idx in out])
 
         # Se genera un hash para cada fila de datos.
-        data['key'] = data.apply(lambda row: ' '.join(map(str, row)), axis=1)
-        data['hashed'] = data['key'].apply(lambda x: hashlib.sha256(x.encode()).hexdigest())
+        data['key'] = data.apply(lambda row: ' '.join(map(str, row)), axis=1) #Los convierto en string y los uno con un espacio
+        data['hashed'] = data['key'].apply(lambda x: hashlib.sha256(x.encode()).hexdigest()) #Hacemos el hash link con sha256
 
         # Preparamos los datos para ser enviados a Redis
-        dict_redis = {}
+        dict_redis = {} #Unimos los hash de las entradas con las predicciones del modelo.
         for index, row in data.iterrows():
             dict_redis[row["hashed"]] = labels[index]
 
-        self.redis_data = dict_redis
+        self.redis_data = dict_redis #Creamos el nuevo diccionario
 
-        self.next(self.ingest_redis)
+        self.next(self.ingest_redis) #Hacemos la ingesta para pasarle el dato a las redis
 
     @step
     def ingest_redis(self):
@@ -98,16 +98,16 @@ class BatchProcessingModel(FlowSpec):
         r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
         # Comenzamos un pipeline de Redis
-        pipeline = r.pipeline()
+        pipeline = r.pipeline() #Hacemos un pipeline para darle los pares key values
 
         # Se pre-ingresan los datos en Redis.
         for key, value in self.redis_data.items():
             pipeline.set(key, value)
 
         # Ahora ingestamos todos de una y dejamos que Redis resuelva de la forma más eficiente
-        pipeline.execute()
+        pipeline.execute() #hacemos la ingesta cargando los resultados
 
-        self.next(self.end)
+        self.next(self.end) #le damos un cartel de que termino
 
     @step
     def end(self):
