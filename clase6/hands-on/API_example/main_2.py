@@ -1,6 +1,6 @@
 import random
 import fastapi
-from pydantic import BaseModel
+from pydantic import BaseModel #Hace un control de tipo de datos, cosa que no pasaba con el Main 1
 
 app = fastapi.FastAPI()
 
@@ -16,7 +16,7 @@ class OutputPrediction(BaseModel):
     prediction: str
 
 
-class MLModel:
+class MLModel: # Vamos a crear la clase del modelo
     @staticmethod
     def predict(size, height, weight, number_of_whiskers):
         value = random.randint(0, 1)
@@ -31,7 +31,7 @@ class MLModel:
 ml_model = MLModel()
 
 # Endpoint to make predictions
-@app.post("/predict/")
-async def predict(features: InputFeatures) -> OutputPrediction:
+@app.post("/predict/") #Igual que antes
+async def predict(features: InputFeatures) -> OutputPrediction: #La salida es lo que no da la calse salida
     prediction = ml_model.predict(features.size, features.height, features.weight, features.number_of_whiskers)
     return prediction

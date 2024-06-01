@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 app = fastapi.FastAPI()
 
 
-class InputFeatures(BaseModel):
+class InputFeatures(BaseModel): #Le damos límites a los parámetros
     size: float = Field(
         description="Size of the animal in cm",
         ge=0,
@@ -68,7 +68,7 @@ class MLModel:
         return OutputPrediction(prediction=output)
 
 
-class APIInfo(BaseModel):
+class APIInfo(BaseModel): #Información de la API cuando hacemos unas consulta devuelve algo genérico
     name: str = "ML Model API"
     description: str = "A simple machine learning model API for predicting cats or dogs."
     version: str = "1.0"

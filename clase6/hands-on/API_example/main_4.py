@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 app = fastapi.FastAPI()
 
-# API key
+# API key, es lo que vamos a agregar ahora
 API_KEY = "test-key"
 
 
@@ -60,7 +60,7 @@ class OutputPrediction(BaseModel):
     }
 
 
-class MLModel:
+class MLModel: #El modelo sigue siendo igual
     @staticmethod
     def predict(size, height, weight, number_of_whiskers):
         value = random.randint(0, 1)
@@ -89,9 +89,9 @@ async def get_api_info() -> APIInfo:
 
 # Endpoint to make predictions
 @app.post("/predict/")
-async def predict(features: InputFeatures, api_key: str = fastapi.Header(...)) -> OutputPrediction:
+async def predict(features: InputFeatures, api_key: str = fastapi.Header(...)) -> OutputPrediction: #La api_key debe ir en el header
     if api_key != API_KEY:
         raise fastapi.HTTPException(status_code=fastapi.status.HTTP_403_FORBIDDEN, detail="Invalid API Key")
 
-    prediction = ml_model.predict(features.size, features.height, features.weight, features.number_of_whiskers)
+    prediction = ml_model.predict(features.size, features.height, features.weight, features.number_of_whiskers) #Si llegó la api_key hacemos la predicción
     return prediction
