@@ -5,6 +5,6 @@ LABEL authors="facundolucianna"
 # Agregamos el codigo al contenedor
 ADD main.py ./main.py
 
-# Definimos un punto de entrada a la imagen
+# Definimos un punto de entrada a la imagen, cuando se cree el contenedor se debe crear esta imagen
 #ENTRYPOINT ["python", "main.py"]
 CMD ["python", "main.py"]

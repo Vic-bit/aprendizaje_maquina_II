@@ -5,7 +5,9 @@ import joblib
 
 from sqlalchemy import create_engine
 
+# Es un poco largo porque a streamlit se le tiene que dar todas las instrucciones.
 
+# Es la base de datos que se creó en la otra imagen.
 def connect_to_db():
     """
     Función para conectarse a la base de datos PostgreSQL.
@@ -25,7 +27,7 @@ def connect_to_db():
     engine = create_engine(f'postgresql://{db_dict["user"]}:{db_dict["password"]}@{db_dict["host"]}:{db_dict["port"]}/{db_dict["database"]}')
     return engine
 
-
+# Obtiene información de los nombres de la base de datos.
 def fetch_names(engine):
     """
     Función para obtener los nombres de los empleados desde la base de datos.
@@ -40,7 +42,7 @@ def fetch_names(engine):
 
     return df["name"].sort_values().to_list()
 
-
+# Obtiene información de los datos de los empleados. Todo esto se hace con SQL. 
 def fetch_employee_data(engine, name):
     """
     Función para obtener los datos de un empleado desde la base de datos según su nombre.
@@ -60,7 +62,7 @@ def fetch_employee_data(engine, name):
 
     return df
 
-
+# Cargamos el modelo ya entrenado en un archivo .pkl.
 def load_model():
     """
     Función para cargar el artefacto del modelo
@@ -69,7 +71,7 @@ def load_model():
     """
     return joblib.load('./salary_model.pkl')
 
-
+# Si hay de un símbolo de moneda lo formatea y nos da el valor corregido.
 def format_currency(value):
     """
     Función para formatear un valor numérico como moneda.
@@ -84,7 +86,7 @@ def format_currency(value):
     formatted_currency = "$" + formatted_value
     return formatted_currency
 
-
+# Convierte el string a float.
 def currency_to_float(currency_string):
     """
     Función para convertir una cadena de moneda formateada a float.

@@ -1,11 +1,12 @@
-services:
+services: # Tenemos implementados servicios.
   db:
-  #Toma imágenes que ya tiene doker impelmenetadas
+  #Toma imágenes que ya están armadas del repositorio de doker
     image: mariadb:10.6.4-focal
     command: '--default-authentication-plugin=mysql_native_password'
     volumes:
       - db_data:/var/lib/mysql
     restart: always
+    #Toma la información necesaria para la base de datos
     environment:
       - MYSQL_ROOT_PASSWORD=somewordpress
       - MYSQL_DATABASE=wordpress
@@ -14,7 +15,7 @@ services:
     expose:
       - 3306
       - 33060
-      #Instala un wordpress
+    #Instala un servicio de wordpress
   wordpress:
     image: wordpress:latest
     #Le digo en que puerto se instala

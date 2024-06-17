@@ -2,6 +2,7 @@
 
 Si queremos usar la linea de comando, los pasos a seguir es
 
+# Si lo hacmos con línea de comando en la terminal ejecutamos este comando de donde está nuestra imagen.
 1. Construimos la imagen
 
 ```Bash

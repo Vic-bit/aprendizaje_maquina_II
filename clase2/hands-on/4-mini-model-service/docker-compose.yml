@@ -8,7 +8,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - net
-    #Variables ambientes
+    #Variables de ambiente
     env_file:
       - .env
     volumes:
@@ -18,10 +18,10 @@ services:
       interval: 60s
       timeout: 20s
       retries: 3
-#Va a contruir la imagen de la capeta dockerfiles
+#Es un modelo de predicción de salario. Va a contruir la imagen de la capeta dockerfiles
   salary:
     restart: always
-    build: "./dockerfiles/salary_app"
+    build: "./dockerfiles/salary_app" #Construye la imagen dentro de dockerfiles.
     image: salary_app
     container_name: salary_app
     #Va a trabajar sobre el mismo puerto
@@ -32,7 +32,7 @@ services:
     env_file:
       - .env
 
-
+# Crea una red donde se van a comunicar las dos imágenes
 networks:
   net:
     driver: bridge
