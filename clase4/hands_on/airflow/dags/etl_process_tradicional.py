@@ -1,22 +1,26 @@
 #Es un poco diferente al del profe
-import datetime
+# Todas las funciones podrían estar en otro archivo y solo las importamos.
 
+# Dependencias de nuestras funciones
 import pandas as pd
-
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.utils.dates import days_ago
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from ucimlrepo import fetch_ucirepo
 
-# Podemos cambiar los argumentos por defecto
+# Dependencias para DAG
+import datetime
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator # De los operadores de airflow
+from airflow.utils.dates import days_ago # Como herramientas de fechas usamos 1 día atrás
+
+
+# Argumentos por defecto del DAG. Podemos cambiarlos.
 default_args = {
-    'depends_on_past': False,
-    'schedule_interval': None, #intevalos
-    'retries': 1, #reintentos
+    'depends_on_past': False, #si depende del pasado
+    'schedule_interval': None, #intevalos de planificación
+    'retries': 1, #reintentos, solo 1
     'retry_delay': datetime.timedelta(minutes=5), #el delay para reintentar, para darle el tiempo de que termine otro proceso
-    'dagrun_timeout': datetime.timedelta(minutes=15) #si nuestro proceso tarda más, lo mata
+    'dagrun_timeout': datetime.timedelta(minutes=15) #si nuestro proceso tarda más, lo mata porque hay algo raro.
 }
 
 # Creamos el objeto DAG
@@ -25,12 +29,13 @@ dag = DAG(
     default_args=default_args, # Le mandamos valores por defecto
     description='Proceso ETL de ejemplo sin TaskFlow', #Se puede agregar una descripción
     schedule_interval=None, # Se le puede configurar otra vez el intervalo, y hay cosas que funcionan mejor configurando acá abajo u otras veces arriba
-    start_date=days_ago(2), #Fecha de incio del dag, se usa para programar que corra semanalmente, espera que transcurra una semana de su fecha de incio para volver a correr
-    # Entonces si se corta la luz, y se pierde una hora fijada, lo corre en cuando se encienda, es más robusto
+    start_date=days_ago(2), #Fecha de incio del dag, se usa para programar que corra semanalmente, espera que transcurra una semana de su fecha de incio para volver a correr y tenga los valores de toda la semana
+    # Entonces si se corta la luz, y se pierde una hora fijada, lo corre en cuando se encienda, es más robusto con days_ago.
     tags=['ETL'] 
 )
+# A start_date=days_ago(2) le podría asignar '@daily' o 'minuto hora día mes año' o sea, '15 3 * * *' pero es UTC0 
 
-def obtain_original_data(): #Funciones que corren dentro del DAG.
+def obtain_original_data(): #Funciones que corren dentro del DAG, pero podría hacerlas afuera e importarlas, pero por motivos didácticos se incluyen.
     """
     Carga los datos desde de la fuente
     """
@@ -43,14 +48,14 @@ def obtain_original_data(): #Funciones que corren dentro del DAG.
     dataframe.to_csv(path, index=False)
 
     # Enviamos un mensaje para el siguiente nodo
-    return path #Todo lo de return va a un canal de comunicación de tareas que se llama xcom. Cualquier tarea puede leer lo de xcom
+    return path #Todo lo de return de cualquier función va a un canal de comunicación de tareas que se llama xcom. Cualquier tarea siguiente puede leer lo de xcom de la anterior.
 
 
-def make_dummies_variables(**kwargs):
+def make_dummies_variables(**kwargs): # Cuando se trabaje con xcom se debe agregar el parámetro **kwargs
     """
     Convierte a las variables en Dummies
     """
-    ti = kwargs['ti'] #Es el entonrno donde está trabajando Airflow. Se puede agregar el ti como argumento en vez de acá y no poner nada cunado se lo llame
+    ti = kwargs['ti'] #Es el entonrno donde está trabajando Airflow. Se puede agregar el ti como argumento en vez de acá y no poner nada cuando se lo llame
     path_input = ti.xcom_pull(task_ids='obtain_original_data') #ti tien el xcom. Con xcom_pull quiero traer la información que dejó la funición de arriba
     #Con xcom_push le podemos dar el nombre a la variable, 
     a = 0
@@ -60,7 +65,7 @@ def make_dummies_variables(**kwargs):
 
         # Limpiamos duplicados
         dataset = pd.read_csv(path_input) #Mandamos solo el path porque xcom está pensado para mandar varaibles pequeñas y no datasets, solo el path se manda
-
+        # Con el path podemos leer lo almacenado en "./data.csv", es el path donde está el dataset.
         # Y quitamos nulos
         dataset.drop_duplicates(inplace=True, ignore_index=True)
         dataset.dropna(inplace=True, ignore_index=True)
@@ -85,7 +90,7 @@ def make_dummies_variables(**kwargs):
     return {"observations": a, "columns": b} #Devuelve un dic
 
 
-def split_dataset(**kwargs): #Divide el dataset, 
+def split_dataset(**kwargs): #Divide el dataset en 2
     """
     Genera el dataset y obtiene set de testeo y evaluación
     """
@@ -102,7 +107,7 @@ def split_dataset(**kwargs): #Divide el dataset,
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y)
 
-        #Los graba para que la siguiente tarea lo pueda ver
+        #Los graba para que la siguiente tarea lo pueda ver, no devuelve nada 
         X_train.to_csv("./X_train.csv", index=False)
         X_test.to_csv("./X_test.csv", index=False)
         y_train.to_csv("./y_train.csv", index=False)
@@ -145,7 +150,8 @@ def read_test_data():
 
 #Hemos definido funciones pero podrían ser clases
 
-#Las tareas las genera con un operador
+#Las tareas las genera con un operador, son operadores de acción porque van a ejecutar esa acción.
+# Por cada función de nuestro DAG debemos crear una tarea. 
 obtain_original_data_operator = PythonOperator(
     task_id='obtain_original_data', #Le damos el ID de la tarea
     python_callable=obtain_original_data, #La función que va a llamar, puede tener el mismo nombre para no confundirse
@@ -153,7 +159,7 @@ obtain_original_data_operator = PythonOperator(
 )
 
 make_dummies_variables_operator = PythonOperator(
-    task_id='make_dummies_variables',
+    task_id='make_dummies_variables', # Cuando se quiera utilizar xcom se debe dar el id de la tarea,
     provide_context=True,
     python_callable=make_dummies_variables,
     dag=dag

@@ -1,7 +1,8 @@
 import datetime
 
+# Se importan las depenendicas necesarias
 from airflow.decorators import dag, task
-
+# Se tienen los argumentos por deafult
 default_args = {
     'depends_on_past': False,
     'schedule_interval': None,
@@ -10,7 +11,7 @@ default_args = {
     'dagrun_timeout': datetime.timedelta(minutes=15)
 }
 
-
+# Decorador dag, para configurar el dag y pasarle los parámetros
 @dag(
     dag_id="etl_with_taskflow",
     description="Proceso ETL de ejemplo usando TaskFlow",
@@ -18,14 +19,14 @@ default_args = {
     default_args=default_args,
     catchup=False,
 )
-def process_etl_taskflow():
+def process_etl_taskflow(): #Creamos una sola función donde va a estar nuestro pipeline
 
-    @task.virtualenv(
-        task_id="obtain_original_data",
-        requirements=["ucimlrepo~=0.0",
+    @task.virtualenv( # Cada tarea puede tener su ambiente virtual
+        task_id="obtain_original_data", #Le doy un id a la tarea
+        requirements=["ucimlrepo~=0.0", #Le doy los requerimientos
                       "pandas~=2.0"],
     )
-    def get_data():
+    def get_data(): # Todo esto lo hago dentro de la tarea, en un ambiente virtual
         """
         Carga los datos desde de la fuente
         """
@@ -45,7 +46,7 @@ def process_etl_taskflow():
         # Enviamos un mensaje para el siguiente nodo
         return path
 
-    @task(
+    @task( #No se aclara que sea virtual, entonces es el ambiente por defecto de airflow.
         task_id="make_dummies_variables",
         multiple_outputs=True
     )
@@ -88,9 +89,10 @@ def process_etl_taskflow():
 
         return {"observations": a, "columns": b}
 
-    @task.virtualenv(
+    # Cada tarea tiene su ambiente virtual
+    @task.virtualenv( 
         task_id="split_dataset",
-        requirements=["pandas~=1.5",
+        requirements=["pandas~=1.5",    #Se ve que tiene pandas 1.5 y es diferente a la primera tarea. Esto es conveniente para cambiar versiones por separado y no tocar las otras que funcionan bien.
                       "scikit-learn==1.3.2"],
     )
     def split_dataset(obs, col):
@@ -172,9 +174,13 @@ def process_etl_taskflow():
 
         print(f"Las X de testeo son {X_test.shape} y las y son {y_test.shape}")
 
-    path_input = get_data()
-    dummies_output = make_dummies_variables(path_input)
+    
+    path_input = get_data() #Ejecuta la primera función y lo guarda aquí
+    dummies_output = make_dummies_variables(path_input) #Ejecuta la segunda función y lo guarda aquí
     split_dataset(dummies_output["observations"], dummies_output["columns"]) >> normalize_data() >> [read_train_data(),
                                                                                                      read_test_data()]
+    #split toma lo que devolvieron las anteriores, no se necesita mandar a xcom el path. Se puede hacer un híbrido 
+    # de código en python con sincronización.
 
+#Ejecuta el taskflow
 dag = process_etl_taskflow()

@@ -1,3 +1,4 @@
 airflow
 awswrangler
+# Para tomar un dataset de prueba y entrenar el modelo
 ucimlrepo

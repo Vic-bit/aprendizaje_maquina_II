@@ -84,6 +84,7 @@ services:
       - -c
       - airflow
 
+# Vamos a necesitar muchos contenedores para poder tener todos los servicios de airflow.
   airflow-scheduler:
     <<: *airflow-common
     container_name: airflow_scheduler
@@ -116,6 +117,7 @@ services:
   #    airflow-init:
   #      condition: service_completed_successfully
 
+# Es para que corra airflow.
   airflow-init:
     <<: *airflow-common
     container_name: airflow_init
